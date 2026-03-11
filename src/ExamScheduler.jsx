@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { examsRef, set, onValue } from "./firebase";
 
-const YEARS = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"];
+const YEARS = ["Year 1", "Year 2", "Year 3", "Year 4", "Grad Level"];
 const HOURS = Array.from({ length: 13 }, (_, i) => `${i + 7}:00`); // 7:00 to 19:00
 
 function getDayName(dateStr) {
