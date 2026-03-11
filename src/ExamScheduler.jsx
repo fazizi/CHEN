@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { examsRef, set, onValue } from "./firebase";
 
 const YEARS = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"];
 const HOURS = Array.from({ length: 13 }, (_, i) => `${i + 7}:00`); // 7:00 to 19:00
@@ -58,8 +59,6 @@ function getConflicts(exams) {
   return { conflicts, close };
 }
 
-const STORAGE_KEY = "exam-scheduler-data";
-
 const initialForm = {
   professor: "",
   course: "",
@@ -79,21 +78,22 @@ export default function ExamScheduler() {
   const [editId, setEditId] = useState(null);
   const [saved, setSaved] = useState(false);
 
-  // Load from localStorage
+  // Sync from Firebase in real time
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setExams(JSON.parse(stored));
-    } catch {}
+    const unsubscribe = onValue(examsRef, (snapshot) => {
+      const data = snapshot.val();
+      setExams(data ? Object.values(data) : []);
+    });
+    return () => unsubscribe();
   }, []);
 
-  // Save to localStorage
+  // Save to Firebase
   function saveExams(data) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {}
+    const mapped = {};
+    data.forEach(e => { mapped[e.id] = e; });
+    set(examsRef, mapped);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   function handleSubmit() {
